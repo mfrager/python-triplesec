@@ -21,6 +21,11 @@ from Crypto.Protocol.KDF import PBKDF2 as Crypto_PBKDF2
 from Crypto import Random
 rndfile = Random.new()
 
+import time
+import logging
+
+log = logging.getLogger('default')
+
 from .utils import (
     TripleSecFailedAssertion,
     TripleSecError,
@@ -86,8 +91,10 @@ class AES(object):
         validate_key_size(key, cls.key_size, "AES")
 
         iv, ctr = BlockCipher.generate_encrypt_iv_counter(cls.block_size)
+        log.warning('AES: {}'.format(time.time()))
         ciphertext = Crypto_AES.new(key, Crypto_AES.MODE_CTR,
                                     counter=ctr).encrypt(data)
+        log.warning('AES: {}'.format(time.time()))
         return iv + ciphertext
 
     @classmethod
@@ -118,7 +125,9 @@ class Twofish(object):
         iv, ctr = BlockCipher.generate_encrypt_iv_counter(cls.block_size)
         ctr = CounterWrapper(ctr)
         tfish = twofish.Twofish(key)
+        log.warning('Twofish: {}'.format(time.time()))
         ciphertext = strxor(data, cls._gen_keystream(len(data), tfish, ctr))
+        log.warning('Twofish: {}'.format(time.time()))
 
         return iv + ciphertext
 
@@ -142,7 +151,9 @@ class XSalsa20:
         validate_key_size(key, cls.key_size, "XSalsa20")
 
         iv = rndfile.read(cls.iv_size)
+        log.warning('XSalsa20: {}'.format(time.time()))
         ciphertext = salsa20.XSalsa20_xor(data, iv, key)
+        log.warning('XSalsa20: {}'.format(time.time()))
 
         return iv + ciphertext
 
